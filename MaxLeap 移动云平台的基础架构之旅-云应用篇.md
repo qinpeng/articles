@@ -50,7 +50,7 @@
 
    ![maxwon_yewu2](http://o6wkmqikd.bkt.clouddn.com/maxwon_yewu_005.png)
 
-第一版架构遵循两个原则:第一， 以业务实现为目标，尽快做出产品原型。由于MaxLeap已经有很多基础的中间件可以直接拿来使用，如:推送，FAQ&Issue，支付，IM&社交等。现在只需要把精力放在MaxWon 自己的业务中去。第二，快速响应产品的需求，产品指导研发，很多场景、很多的玩法必须帮助产品实现，而且速度要非常快，要快速迭代。
+第一版架构遵循两个原则:第一， 以业务实现为目标，尽快做出产品原型。由于公司云平台已经有很多基础的中间件可以直接拿来使用，如:推送，FAQ&Issue，支付，IM&社交等。现在只需要把精力放在云应用自己的业务中去。第二，快速响应产品的需求，产品指导研发，很多场景、很多的玩法必须帮助产品实现，而且速度要非常快，要快速迭代。
 
 
 
@@ -64,7 +64,7 @@
 |  RDS  |                  Mysql                   |
 | NoSql |                  Mongo                   |
 
-对于大部分人来说 [Vert.x](http://vertx.io/)可能会有点陌生,它是基于`netty` 实现的异步架构，和node.js 极其相似。由于之前做MaxLeap服务，一直在用[Vert.x](http://vertx.io/)做为基础架构，整个团队对Vert.x 也很熟悉，该踩得坑也都踩过了，通过[Verx-Rpc](https://github.com/MaxLeap/vertx-rpc) 可以直接访问的MaxLeap的微服务。在使用Vert.x 时最大的感受就是不能写同步代码，否则就会阻塞，导致导致服务不可用，所以我们的服务全是基于异步的方式来写的。由于它是一个轻量级高性能JVM应用平台，支持多语言开发，它的简单actor-like 机制能帮助脱离直接基于多线程编程，天生支持分布式，以后对于服务扩展也是水到渠成的事情。
+对于大部分人来说 [Vert.x](http://vertx.io/)可能会有点陌生,它是基于netty实现的异步架构，和node.js 极其相似。一直在用[Vert.x](http://vertx.io/)做为基础架构，整个团队对Vert.x 也很熟悉，该踩得坑也都踩过了，通过[Verx-Rpc](https://github.com/MaxLeap/vertx-rpc) 可以直接访问已有的微服务。在使用Vert.x 时最大的感受就是不能写同步代码，否则就会阻塞，导致导致服务不可用，所以我们的服务全是基于异步的方式来写的。由于它是一个轻量级高性能JVM应用平台，支持多语言开发，它的简单actor-like 机制能帮助脱离直接基于多线程编程，天生支持分布式，以后对于服务扩展也是水到渠成的事情。
 
 对于ORM 并没有使用主流的 Hibernate或者IBATIS,而是使用小众的JOOQ。JOOQ 相对于其他ORM算是很轻量，提供了强大的DSL 来访问数据库，灵活，上手很容易，代码非常接近sql。
 
@@ -138,7 +138,7 @@ create.select(AUTHOR.FIRST_NAME, AUTHOR.LAST_NAME, count())
 
  ![](http://o6wkmqikd.bkt.clouddn.com/maxwon_elb.png)
 
-对于**数据存储分离** 也采用了同样的思路。对于Mongo ,`Pandora` 本身就支持按不同App 数据分治。对于Mysql代理则采用 MaxLeap 研发的 Circe组件，可以实现不同App数据的隔离。使用AWS ELB 解决了Circe的负载均衡与高可用。
+对于**数据存储分离** 也采用了同样的思路。对于Mongo ,Pandora本身就支持按不同App 数据分治。对于Mysql代理则采用自研的 Circe组件，可以实现不同App数据的隔离。使用AWS ELB 解决了Circe的负载均衡与高可用。
 
 
 
@@ -171,7 +171,7 @@ WORKDIR /opt/maxwon
 ENTRYPOINT ["vertx", "run", "java-hk2:as.leap.ama.module.jersey.JerseyVerticle", "--conf", "config.json"]
 ```
 
- 通过[spotify](https://github.com/spotify)  `docker-maven-plugin` 插件，根据事先定义在项目中的DockerFile可以轻松的把项目打包成可执行的docker Image并push到生产环境中。
+ 通过[spotify](https://github.com/spotify)  docker-maven-plugin 插件，根据事先定义在项目中的DockerFile可以轻松的把项目打包成可执行的docker Image并push到生产环境中。
 
 ```shell
 $ mvn clean deploy -DpushImage -Pcn 
@@ -182,7 +182,7 @@ $ mvn clean deploy -DpushImage -Pcn
 
 ##### 好用的中间件
 
- **Hydra**: 海德拉 古希腊神话人物,是一种传说中有九个头的大蛇，为冥王看守门户。在这里Hydra 作为  [MaxWon](http://www.maxwon.cn/)的API网关，管理来自不同端的请求，根据请求的来源转发到相应的的[MaxWon](http://www.maxwon.cn/)的服务容器组中。同时它也会管理和监控容器状态以及对服务的动态扩容。
+ **Hydra**: 海德拉 古希腊神话人物,是一种传说中有九个头的大蛇，为冥王看守门户。在这里Hydra 作为MaxWon的API网关，管理来自不同端的请求，根据请求的来源转发到相应的服务容器组中。同时它也会管理和监控容器状态以及对服务的动态扩容。
 
  ![hydra](http://o6wkmqikd.bkt.clouddn.com/hydra.png)
 
@@ -190,7 +190,7 @@ $ mvn clean deploy -DpushImage -Pcn
 
 **Circe**:希腊神话里一个能制造幻觉的女巫,这里用来隐喻能够制造Mysql服务的代理的项目.通过它可以实现不同租户的数据隔离，过滤非法,有毒的sql语句，保证数据隐私和安全。
 
-**Pandora**:访问MongoDB的基础组件，也是MaxLeap 核心组件之一,提供了同步和异步的两种接口。Pandora最为核心的功能是实现了资源限制和数据库访问的路由策略，这对数据库进行平滑的动态扩展及迁移提供了可靠的支持。感兴趣的可以参考同事写的[MONGO 集群设计](https://blog.maxleap.cn/archives/365)
+**Pandora**:访问MongoDB的基础组件，提供了同步和异步的两种接口。Pandora最为核心的功能是实现了资源限制和数据库访问的路由策略，这对数据库进行平滑的动态扩展及迁移提供了可靠的支持。感兴趣的可以参考同事写的[MONGO 集群设计](https://blog.maxleap.cn/archives/365)
 
 
 
