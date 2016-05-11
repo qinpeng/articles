@@ -1,4 +1,4 @@
-#### MaxLeap 移动云平台的基础架构之旅-云应用篇
+#### 移动云平台的基础架构之旅-云应用篇
 
 ```info 
 作者:马传林,从事开发工作已经有5年。当前在MaxLeap数据服务组担任开发工程师，主要负责MaxWon服务器开发。
@@ -29,7 +29,7 @@
 
 现在是一个屌丝逆袭的时代，为了帮助企业和个人无门槛拥有属于自己的APP，[MaxWon](http://www.maxwon.cn/) 应运而生。
 
-[MaxWon](http://www.maxwon.cn/) 是基于[MaxLeap SaaS](https://maxleap.cn/s/web/zh_cn/index.html) 云服务，集成不同行业模块，集 APP 生成，运营，分析，自动化运维与一体的服务，用户只需要关心自己的业务，完全摆脱上面的各种难题。
+云应用平台是基于公司已有的共有云服务，集成不同行业模块，集 APP 生成，运营，分析，自动化运维与一体的服务，用户只需要关心自己的业务，完全摆脱上面的各种难题。
 
   ![maxwon_jiahua](http://o6wkmqikd.bkt.clouddn.com/maxwon_yegou.png)
 
@@ -64,7 +64,7 @@
 |  RDS  |                  Mysql                   |
 | NoSql |                  Mongo                   |
 
-对于大部分人来说 [Vert.x](http://vertx.io/)可能会有点陌生,它是基于`netty` 实现的异步架构，和node.js 极其相似。由于之前做MaxLeap服务，一直在用[Vert.x](http://vertx.io/)做为基础架构，整个团队对Vert.x 也很熟悉，该踩得坑也都踩过了，通过[Verx-Rpc](https://github.com/MaxLeap/vertx-rpc) 可以直接访问的MaxLeap 的微服务。在使用Vert.x 时最大的感受就是不能写同步代码，否则就会阻塞，导致导致服务不可用，所以我们的服务全是基于异步的方式来写的。由于它是一个轻量级高性能JVM应用平台，支持多语言开发，它的简单actor-like 机制能帮助脱离直接基于多线程编程，天生支持分布式，以后对于服务扩展也是水到渠成的事情。
+对于大部分人来说 [Vert.x](http://vertx.io/)可能会有点陌生,它是基于`netty` 实现的异步架构，和node.js 极其相似。由于之前做MaxLeap服务，一直在用[Vert.x](http://vertx.io/)做为基础架构，整个团队对Vert.x 也很熟悉，该踩得坑也都踩过了，通过[Verx-Rpc](https://github.com/MaxLeap/vertx-rpc) 可以直接访问的MaxLeap的微服务。在使用Vert.x 时最大的感受就是不能写同步代码，否则就会阻塞，导致导致服务不可用，所以我们的服务全是基于异步的方式来写的。由于它是一个轻量级高性能JVM应用平台，支持多语言开发，它的简单actor-like 机制能帮助脱离直接基于多线程编程，天生支持分布式，以后对于服务扩展也是水到渠成的事情。
 
 对于ORM 并没有使用主流的 Hibernate或者IBATIS,而是使用小众的JOOQ。JOOQ 相对于其他ORM算是很轻量，提供了强大的DSL 来访问数据库，灵活，上手很容易，代码非常接近sql。
 
