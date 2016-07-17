@@ -1,0 +1,231 @@
+#  20160623 SolrCloud+tomcat7+zookeeper集群配置及使用
+
+### solrCloud的主要功能:
+   主要功能包括强大的全文搜索，点击显示，面搜索，动态聚类，数据库集成，丰富的文件（如Word，PDF）处理，和空间搜索,而且他具有高度的可扩展性，提供容错的分布式搜索和索引。
+```xml        
+         1）集中式的配置信息
+    
+         2）自动容错
+    
+         3）近实时搜索
+    
+         4）查询时自动负载均衡
+```         
+**图1. Collection大致结构图**<br>
+    ![osjp-vertx-fig1-thumb-100159570-orig](http://7xvmgi.com1.z0.glb.clouddn.com/1.png)<br>
+```xml    
+    1、下载https://zookeeper.apache.org/ 
+    2、下载http://lucene.apache.org/solr/
+    3、下载http://tomcat.apache.org/
+```   
+### 下面我就开始学习之旅：
+    首先复制三个tomcat例如:
+    tomcat-server_1  端口：8080  
+    tomcat-server_2  端口：8090  
+    tomcat-server_3  端口：8100  
+一、在分别复制solr-4.7.0下面的example/webapps的solr.war解压复制到tomcat-server_1、tomcat-server_2、tomcat-server_3的webapp下面为solr，分别创建三个文件夹分别为solr_home_1、solr_home_2、solr_home_3作为存放solr的数据。将solr-4.7.0下面example/solr/分别复制到solr_home_1、solr_home_2、solr_home_3下面。<br>
+**图2:**<br>
+    ![osjp-vertx-fig1-thumb-100159570-orig](http://7xvmgi.com1.z0.glb.clouddn.com/2.png)<br>
+    
+二、分别修改solr_home_1、solr_home_2、solr_home_3下面的solr.xml。
+```xml 
+    <solr>
+            <solrcloud>
+            <str name="host">${host:}</str>
+            <int name="hostPort">${jetty.port:8080}</int>//端口分别对应tomcat的端口
+            <str name="hostContext">${hostContext:solr}</str>
+            <int name="zkClientTimeout">${zkClientTimeout:30000}</int>
+            <bool name="genericCoreNodeNames">${genericCoreNodeNames:true}</bool>
+            </solrcloud>
+          <shardHandlerFactory name="shardHandlerFactory"
+            class="HttpShardHandlerFactory">
+          <int name="socketTimeout">${socketTimeout:0}</int>
+          <int name="connTimeout">${connTimeout:0}</int>
+          </shardHandlerFactory>
+    </solr>
+    其他solr.xml同理。
+```    
+三、分别进入tomcat-server_1、tomcat-server_2、tomcat-server_3 下面的webapp下面的solr，然后去改WEB-INF下的web.xml，分别为下面的清单：
+```xml
+        <env-entry>
+               <env-entry-name>solr/home</env-entry-name>
+               <env-entry-value>D:/solrCloud/solr_home_1</env-entry-value>//定义solr索引所存的地址
+               <env-entry-type>java.lang.String</env-entry-type>
+        </env-entry>
+    
+        <env-entry>
+               <env-entry-name>solr/home</env-entry-name>
+               <env-entry-value>D:/solrCloud/solr_home_2</env-entry-value>//定义solr索引所存的地址
+               <env-entry-type>java.lang.String</env-entry-type>
+        </env-entry>   
+
+        <env-entry>
+               <env-entry-name>solr/home</env-entry-name>
+               <env-entry-value>D:/solrCloud/solr_home_3</env-entry-value>//定义solr索引所存的地址
+               <env-entry-type>java.lang.String</env-entry-type>
+        </env-entry>  
+```   
+四、分别在tomcat-server_1、tomcat-server_2、tomcat-server_3的bin下面的catalina.bat的添加
+```xml
+    set java_opts=-Dsolr.home=d:/solrCloud/solr_home_1 -Dbootstrap_confdir=D:/solrCloud/solr_home_1/collection1/conf -Dcollection.configName=myconf -DnumShards=2 -DzkHost=127.0.0.1:2181
+    set JAVA_OPTS=-Dsolr.home=d:/solrCloud/solr_home_2 -DzkHost=127.0.0.1:2181
+    set JAVA_OPTS=-Dsolr.home=d:/solrCloud/solr_home_3 -DzkHost=127.0.0.1:2181
+```
+五、复制三个zoo例如:
+```xml
+        zk-server_1  端口：2181
+        zk-server_2  端口：2182
+        zk-server_3  端口：2183
+        在zk-server_1、zk-server_2、zk-server_3下面分别建立两个文件夹为data和logs用来存储数据和日志。
+        分别再data目录下面创建myid，里面分别写1、2、3。
+        配置D:\solrCloud\zk-server_1\conf\zoo.cfg如下:
+        dataDir=D:/solrCloud/zk-server_1/data
+        dataLogDir=D:/solrCloud/zk-server_1/logs
+        clientPort=2181
+        server.1=127.0.0.1:2888:3888
+        server.2=127.0.0.1:2889:3889
+        server.3=127.0.0.1:2890:3890
+        其他两个配置如同上面配置。
+```
+**图3:**<br>
+    ![osjp-vertx-fig1-thumb-100159570-orig](http://7xvmgi.com1.z0.glb.clouddn.com/3.png)<br>
+    
+    下面我们启动zk_server1、zk_server2、zk_server3.如下图:
+**图4:**<br>
+    ![osjp-vertx-fig1-thumb-100159570-orig](http://7xvmgi.com1.z0.glb.clouddn.com/4.jpeg)<br>
+    启动时，第一个报错是因为找不到其他两个zk，才会报错。这都是不要紧的，三个启动好了就不会报错了。
+    <br>
+    下面我们在启动tomcat-server_1、tomcat-server_2、tomcat-server_3。
+    <br>
+**图5:**<br>
+    ![osjp-vertx-fig1-thumb-100159570-orig](http://7xvmgi.com1.z0.glb.clouddn.com/5.jpeg)
+**图6:**<br>    
+    ![osjp-vertx-fig1-thumb-100159570-orig](http://7xvmgi.com1.z0.glb.clouddn.com/6.png)
+    
+### 创建<br>
+    http://127.0.0.1:8080/solr/admin/collections?action=CREATE&name=collection1&numShards=3&replicationFactor=2&maxShardsPerNode=2&collection.configName=myconf
+### 重新加载接口<br>
+    http://127.0.0.1:8080/solr/admin/collections?action=RELOAD&name=collection1
+### 删除<br>
+    http://127.0.0.1:8080s/solr/admin/collections?action=DELETE&name=collection1
+<br>    
+清单1. SolrCloud.java    
+```java
+    import java.io.IOException;
+    import java.util.ArrayList;
+    import java.util.Collection;
+    import java.util.Map;
+    import org.apache.solr.client.solrj.SolrQuery;
+    import org.apache.solr.client.solrj.SolrServer;
+    import org.apache.solr.client.solrj.SolrServerException;
+    import org.apache.solr.client.solrj.impl.CloudSolrServer;
+    import org.apache.solr.client.solrj.response.QueryResponse;
+    import org.apache.solr.common.SolrDocument;
+    import org.apache.solr.common.SolrDocumentList;
+    import org.apache.solr.common.SolrInputDocument;
+    public class SolrCloud {
+            private static CloudSolrServer cloudSolrServer;
+            private static synchronized CloudSolrServer getCloudSolrServer(final String zkHost) {
+            if (cloudSolrServer == null) {
+                try {
+                        cloudSolrServer = new CloudSolrServer(zkHost);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+            }
+
+        return cloudSolrServer;
+    }
+    //添加索引
+    private void addIndex(SolrServer solrServer) {
+        try {
+            SolrInputDocument doc1 = new SolrInputDocument();
+            doc1.addField("id", "421245251215121452521251");
+            doc1.addField("title", "张三");
+            SolrInputDocument doc2 = new SolrInputDocument();
+            doc2.addField("id", "4224558524254245848524243");
+            doc2.addField("title", "李四");
+
+            SolrInputDocument doc3 = new SolrInputDocument();
+            doc3.addField("id", "4543543458643541324153453");
+            doc3.addField("title", "王五");
+
+            Collection<SolrInputDocument> docs = new ArrayList<SolrInputDocument>();
+            docs.add(doc1);
+            docs.add(doc2);
+            docs.add(doc3);
+
+            solrServer.add(docs);
+            solrServer.commit();
+
+        } catch (SolrServerException e) {
+            System.out.println("Add docs Exception !!!");
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Unknowned Exception!!!!!");
+            e.printStackTrace();
+        }
+
+    }
+   // 搜索
+    public void search(SolrServer solrServer, String String) {
+        SolrQuery query = new SolrQuery();
+        query.setQuery(String);
+        try {
+            QueryResponse response = solrServer.query(query);
+            SolrDocumentList docs = response.getResults();
+            for (SolrDocument doc : docs) {
+                for (Map.Entry<String, Object> entry : doc) {
+                    System.out.println(entry.getKey()+"="+entry.getValue());
+                } 
+            }
+        } catch (SolrServerException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Unknowned Exception!!!!");
+            e.printStackTrace();
+        }
+    }
+    //删除
+    public void deleteAllIndex(SolrServer solrServer) {
+        try {
+            solrServer.deleteByQuery("*:*");// delete everything!
+            solrServer.commit();
+        } catch (SolrServerException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Unknowned Exception !!!!");
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        final String zkHost = "127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183";
+        final String defaultCollection = "collection1";
+        final int zkClientTimeout = 20000;
+        final int zkConnectTimeout = 1000;
+
+        CloudSolrServer cloudSolrServer = getCloudSolrServer(zkHost);
+        System.out.println("The Cloud SolrServer Instance has benn created!");
+        cloudSolrServer.setDefaultCollection(defaultCollection);
+        cloudSolrServer.setZkClientTimeout(zkClientTimeout);
+        cloudSolrServer.setZkConnectTimeout(zkConnectTimeout);
+        cloudSolrServer.connect();
+        System.out.println("The cloud Server has been connected !!!!");
+        SolrCloud test = new SolrCloud();
+         test.addIndex(cloudSolrServer);
+         test.search(cloudSolrServer, "id:*");
+         test.deleteAllIndex(cloudSolrServer);
+         test.search(cloudSolrServer, "id:*");
+         System.out.println("hashCode"+test.hashCode());
+         cloudSolrServer.shutdown();
+    }
+}
+```
+**自MaxLeap团队_云服务研发成员：JinYang Zhang**<br>
+**关键词信息 : java   全文检索 SolrCloud集群 分布式 服务发现 服务注册  SolrCloud**<br>
+**文章分类 ：后端编程**<br>
